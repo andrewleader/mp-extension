@@ -1,0 +1,20 @@
+{
+  "name": "Mountain Project extension",
+  "action": {
+    "default_popup": "popup/popup.html"
+  },
+  "manifest_version": 3,
+  "version": "0.1",
+  "description": "Turns the Mountain Project page red when you click the icon",
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "scripting"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://*.mountainproject.com/*"],
+      "js": ["content-script.js"]
+    }
+  ]
+}
