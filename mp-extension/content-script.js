@@ -21,14 +21,37 @@ function search(text) {
 }
 
 function getInfo() {
-  var comments = getComments();
+  try
+  {
+    var comments = getComments();
 
-  var info = {
-    gearComments: getGearComments(comments),
-    gearStrings: gearStrings
-  };
+    var info = {
+      gearComments: getGearComments(comments),
+      gearStrings: gearStrings,
+      keywordCounts: getKeywordCounts(comments)
+    };
 
-  return info;
+    return info;
+  } catch (e) {
+    return {
+      error: e.toString()
+    };
+  }
+}
+
+function getKeywordCounts(comments) {
+  var keywordCounts = [
+    getKeywordCount(comments, [ "slab" ]),
+    getKeywordCount(comments, [ "overhang" ]),
+    getKeywordCount(comments, [ "traverse", "traversing" ])
+  ];
+
+  keywordCounts.sort((a, b) => b[1] - a[1]);
+  return keywordCounts;
+}
+
+function getKeywordCount(comments, keywords) {
+  return [ keywords[0], getCommentsMatchingKeywords(comments, keywords).length ];
 }
 
 const gearStrings = [
@@ -50,6 +73,47 @@ function getGearComments(comments) {
   return getMatchingComments(comments, gearStrings);
 }
 
+function getCommentsMatchingKeywords(comments, keywords) {
+  var matchingComments = [];
+  comments.forEach(comment => {
+    for (var i = 0; i < keywords.length; i++) {
+      if (includesKeyword(comment.text, keywords[i])) {
+        matchingComments.push(comment);
+        break;
+      }
+    }
+  });
+  return matchingComments;
+}
+
+function includesKeyword(txt, keyword) {
+  txt = txt.toLowerCase();
+  keyword = keyword.toLowerCase();
+
+  var split = splitByDelimiters(txt);
+  for (var i = 0; i < split.length; i++) {
+    var word = split[i];
+    if (word === keyword) {
+      return true;
+    }
+    if (word.endsWith("s")) {
+      if (word.substring(0, word.length - 1) == keyword) {
+        return true;
+      }
+    }
+    if (word.endsWith("ing")) {
+      if (word.substring(0, word.length - 3) == keyword) {
+        return true;
+      }
+    }
+    if (word.endsWith("ed")) {
+      if (word.substring(0, word.length - 2) == keyword) {
+        return true;
+      }
+    }
+  }
+}
+
 function getMatchingComments(comments, searchStrings) {
   var matchingComments = [];
   comments.forEach(comment => {
@@ -68,6 +132,32 @@ function includesText(toSearch, terms) {
     }
   });
   return found;
+}
+
+function splitByDelimiters(str) {
+  const delimiters = [' ', ',', '.', ':', ';', '!', '?'];
+  let splitStr = [str];
+
+  delimiters.forEach(delimiter => {
+    let newSplitStr = [];
+    splitStr.forEach(substr => {
+      let prevSplit = 0;
+      let currSplit = substr.indexOf(delimiter);
+      while (currSplit !== -1) {
+        // Check if the delimiter is inside a number
+        let beforeDelimiter = substr.substring(prevSplit, currSplit);
+        if (!beforeDelimiter.match(/[0-9]+/)) {
+          newSplitStr.push(substr.substring(prevSplit, currSplit));
+          prevSplit = currSplit + 1;
+        }
+        currSplit = substr.indexOf(delimiter, currSplit + 1);
+      }
+      newSplitStr.push(substr.substring(prevSplit));
+    });
+    splitStr = newSplitStr;
+  });
+
+  return splitStr;
 }
 
 function getComments() {

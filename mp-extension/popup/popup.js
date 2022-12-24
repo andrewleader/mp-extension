@@ -45,8 +45,16 @@ var displaySearchResults = (info) => {
 
 var onGotInfo = (info) =>
 {
+  var gearDiv = document.getElementById("gearDiv");
   try {
-    var gearDiv = document.getElementById("gearDiv");
+    var keywordsDiv = document.getElementById("keywordsDiv");
+    var keywordCounts = info.keywordCounts;
+    keywordCounts.forEach(c => {
+      var el = document.createElement("strong");
+      el.innerText = c[0] + ": " + c[1];
+      keywordsDiv.appendChild(el);
+    });
+
     var gearStrings = info.gearStrings;
     
     info.gearComments.forEach(c => {
@@ -56,7 +64,7 @@ var onGotInfo = (info) =>
     });
 
     header.innerText = "Loaded!";
-  } catch {}
+  } catch (e) { gearDiv.innerText = e + "\n\n" + JSON.stringify(info); }
 }
 
 var formatParagraph = (txt, searchStrings) => {
