@@ -11,7 +11,8 @@ function getInfo() {
   var comments = getComments();
 
   var info = {
-    gearComments: getGearComments(comments)
+    gearComments: getGearComments(comments),
+    gearStrings: gearStrings
   };
 
   return info;
@@ -27,7 +28,9 @@ const gearStrings = [
   ".3", ".4", ".5", ".75",
   "nut",
   "sling",
-  "draw"
+  "draw",
+  "double",
+  "single"
 ]
 
 function getGearComments(comments) {
@@ -73,6 +76,8 @@ function getComments() {
       text: commentText
     });
   });
+
+  comments.reverse();
 
   const potentialTickHeaders = document.getElementsByTagName("h3");
   Array.prototype.forEach.call(potentialTickHeaders, pth => {
