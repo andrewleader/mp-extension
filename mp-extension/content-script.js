@@ -3,9 +3,22 @@ chrome.runtime.onMessage.addListener(
     if (request.operation == "getInfo") {
       // Can send back any valid JSON
       sendResponse(getInfo());
+    } else if (request.operation == "search") {
+      sendResponse(search(request.text));
     }
   }
 )
+
+function search(text) {
+  var comments = getComments();
+
+  var info = {
+    text: text,
+    comments: getMatchingComments(comments, [ text ])
+  };
+  
+  return info;
+}
 
 function getInfo() {
   var comments = getComments();
@@ -34,13 +47,17 @@ const gearStrings = [
 ]
 
 function getGearComments(comments) {
-  var gearComments = [];
+  return getMatchingComments(comments, gearStrings);
+}
+
+function getMatchingComments(comments, searchStrings) {
+  var matchingComments = [];
   comments.forEach(comment => {
-    if (includesText(comment.text, gearStrings)) {
-      gearComments.push(comment);
+    if (includesText(comment.text, searchStrings)) {
+      matchingComments.push(comment);
     }
   });
-  return gearComments;
+  return matchingComments;
 }
 
 function includesText(toSearch, terms) {

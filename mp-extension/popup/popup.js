@@ -1,33 +1,62 @@
 var header = document.getElementById("header");
 
-var tabQuery = { active: true, currentWindow: true };
 
-var tabCallback = (tabs) => {
-  var currentTab = tabs[0]; // there will be only one in this array
-  if (!currentTab.url.includes("mountainproject.com"))
-  {
-    header.innerText = "Only works on mountainproject.com";
-  }
-  else
-  {
-    header.innerText = "Getting DOM...";
+var requestInfo = async (message) => {
+  const [tab] = await chrome.tabs.query({active: true, lastFocusedWindow: true});
+  const response = await chrome.tabs.sendMessage(tab.id, message);
+  return response;
+}
 
-    chrome.tabs.sendMessage(currentTab.id, { operation: "getInfo" }, onGotInfo);
-  }
+var search = async () => {
+  var searchDiv = document.getElementById("searchDiv");
+  try {
+    var searchInput = document.getElementById("searchInput");
+    var searchText = searchInput.value;
+    searchDiv.innerHTML = "";
+
+    var searchResults = await requestInfo({
+      operation: "search",
+      text: searchText
+    });
+
+    displaySearchResults(searchResults);
+  } catch (e) { searchDiv.innerText = "Error: " + e; }
+  return false;
+}
+
+document.getElementById("searchButton").onclick = search;
+
+var displaySearchResults = (info) => {
+  var searchDiv = document.getElementById("searchDiv");
+  try {
+    searchDiv.innerHTML = "";
+
+    info.comments.forEach(c => {
+      var p = formatParagraph(c.text, [ info.text ]);
+
+      searchDiv.appendChild(p);
+    });
+
+    if (info.comments.length == 0) {
+      searchDiv.innerText = "Nothing found";
+    }
+  } catch (e) {searchDiv.innerText = "Error displaying: " + e;}
 }
 
 var onGotInfo = (info) =>
 {
-  var gearDiv = document.getElementById("gearDiv");
-  var gearStrings = info.gearStrings;
-  
-  info.gearComments.forEach(c => {
-    var p = formatParagraph(c.text, gearStrings);
+  try {
+    var gearDiv = document.getElementById("gearDiv");
+    var gearStrings = info.gearStrings;
+    
+    info.gearComments.forEach(c => {
+      var p = formatParagraph(c.text, gearStrings);
 
-    gearDiv.appendChild(p);
-  });
+      gearDiv.appendChild(p);
+    });
 
-  header.innerText = "Loaded!";
+    header.innerText = "Loaded!";
+  } catch {}
 }
 
 var formatParagraph = (txt, searchStrings) => {
@@ -84,4 +113,9 @@ var matches = (str, searchStrings) => {
   return match;
 }
 
-chrome.tabs.query(tabQuery, tabCallback);
+(async () => {
+  try {
+  var info = await requestInfo({ operation: "getInfo" });
+  onGotInfo(info);
+  } catch {}
+})();
