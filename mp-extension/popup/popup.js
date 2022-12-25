@@ -11,7 +11,7 @@ var requestInfo = async (message) => {
 
 var search = async () => {
   try {
-    var searchText = searchInput.value;
+    var searchText = searchInput.value.toLowerCase();
     searchDiv.innerHTML = "";
 
     var searchResults = await requestInfo({
@@ -126,9 +126,10 @@ var formatParagraph = (txt, searchStrings) => {
 }
 
 var matches = (str, searchStrings) => {
+  str = str.toLowerCase();
   var match = false;
   searchStrings.forEach(searchStr => {
-    if (str.includes(searchStr)) {
+    if (str.includes(searchStr.toLowerCase())) {
       match = true;
     }
   });
