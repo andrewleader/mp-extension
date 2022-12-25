@@ -41,9 +41,10 @@ function getInfo() {
 
 function getKeywordCounts(comments) {
   var keywordCounts = [
-    getKeywordCount(comments, [ "slab" ]),
+    getKeywordCount(comments, [ "slab", "slabby" ]),
     getKeywordCount(comments, [ "overhang" ]),
-    getKeywordCount(comments, [ "traverse", "traversing" ])
+    getKeywordCount(comments, [ "traverse", "traversing" ]),
+    getKeywordCount(comments, [ "runout" ])
   ];
 
   keywordCounts.sort((a, b) => b[1] - a[1]);
@@ -66,7 +67,8 @@ const gearStrings = [
   "sling",
   "draw",
   "double",
-  "single"
+  "single",
+  "triple"
 ]
 
 function getGearComments(comments) {
@@ -90,7 +92,7 @@ function includesKeyword(txt, keyword) {
   txt = txt.toLowerCase();
   keyword = keyword.toLowerCase();
 
-  var split = splitByDelimiters(txt);
+  var split = splitIntoKeywords(txt);
   for (var i = 0; i < split.length; i++) {
     var word = split[i];
     if (word === keyword) {
@@ -111,7 +113,14 @@ function includesKeyword(txt, keyword) {
         return true;
       }
     }
+    if (word.endsWith("'s")) {
+      if (word.substring(0, word.length - 2) == keyword) {
+        return true;
+      }
+    }
   }
+
+  return false;
 }
 
 function getMatchingComments(comments, searchStrings) {
@@ -134,30 +143,14 @@ function includesText(toSearch, terms) {
   return found;
 }
 
-function splitByDelimiters(str) {
-  const delimiters = [' ', ',', '.', ':', ';', '!', '?'];
-  let splitStr = [str];
-
-  delimiters.forEach(delimiter => {
-    let newSplitStr = [];
-    splitStr.forEach(substr => {
-      let prevSplit = 0;
-      let currSplit = substr.indexOf(delimiter);
-      while (currSplit !== -1) {
-        // Check if the delimiter is inside a number
-        let beforeDelimiter = substr.substring(prevSplit, currSplit);
-        if (!beforeDelimiter.match(/[0-9]+/)) {
-          newSplitStr.push(substr.substring(prevSplit, currSplit));
-          prevSplit = currSplit + 1;
-        }
-        currSplit = substr.indexOf(delimiter, currSplit + 1);
-      }
-      newSplitStr.push(substr.substring(prevSplit));
-    });
-    splitStr = newSplitStr;
-  });
-
-  return splitStr;
+function splitIntoKeywords(str) {
+	const regex = /#?\d+(?:\.\d+)?(?!\w)|#?\.\d+(?!\w)|[\w']+/g;
+  var matches = str.match(regex);
+  if (matches === null) {
+  	return [];
+  } else {
+  	return matches;
+  }
 }
 
 function getComments() {

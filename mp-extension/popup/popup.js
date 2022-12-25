@@ -1,4 +1,6 @@
 var header = document.getElementById("header");
+var searchInput = document.getElementById("searchInput");
+var searchDiv = document.getElementById("searchDiv");
 
 
 var requestInfo = async (message) => {
@@ -8,9 +10,7 @@ var requestInfo = async (message) => {
 }
 
 var search = async () => {
-  var searchDiv = document.getElementById("searchDiv");
   try {
-    var searchInput = document.getElementById("searchInput");
     var searchText = searchInput.value;
     searchDiv.innerHTML = "";
 
@@ -24,7 +24,18 @@ var search = async () => {
   return false;
 }
 
+var searchWithString = async (searchText) => {
+  searchInput.value = searchText;
+  await search();
+}
+
+var clearSearch = () => {
+  searchInput.value = "";
+  searchDiv.innerHTML = "";
+};
+
 document.getElementById("searchButton").onclick = search;
+document.getElementById("clearButton").onclick = clearSearch;
 
 var displaySearchResults = (info) => {
   var searchDiv = document.getElementById("searchDiv");
@@ -50,8 +61,11 @@ var onGotInfo = (info) =>
     var keywordsDiv = document.getElementById("keywordsDiv");
     var keywordCounts = info.keywordCounts;
     keywordCounts.forEach(c => {
-      var el = document.createElement("strong");
+      var el = document.createElement("a");
       el.innerText = c[0] + ": " + c[1];
+      el.onclick = () => {
+        searchWithString(c[0]);
+      };
       keywordsDiv.appendChild(el);
     });
 
